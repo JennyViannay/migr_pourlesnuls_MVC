@@ -1,26 +1,44 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: aurelwcs
- * Date: 08/04/19
- * Time: 18:40
- */
 
 namespace App\Controller;
+
+use App\Model\ArticleManager;
 
 class HomeController extends AbstractController
 {
 
-    /**
-     * Display home page
-     *
-     * @return string
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     */
     public function index()
     {
-        return $this->twig->render('Home/index.html.twig');
+        $user = [
+            'name' => 'Jenny',
+            'password' => '1234',
+            'is_connected' => false
+        ];
+        $error = [];
+
+        $articleManager = new ArticleManager();
+        $articles = $articleManager->selectAll();
+
+       if($_SERVER['REQUEST_METHOD'] === 'POST'){
+           if(!empty($_POST['name']) && !empty($_POST['password'])) {
+                if($_POST['name'] === $user['name']){
+                    if($_POST['password'] === $user['password']){
+                        $user['is_connected'] = true;
+                    } else {
+                        $error['password'] = "Password incorrect";
+                    }
+                } else {
+                    $error['name'] = "User not found";
+                }
+           } else {
+            $error['form'] = "Tous les champs sont requis";
+           }
+       }
+
+        return $this->twig->render('Home/index.html.twig', [
+            'articles' => $articles,
+            'user' => $user,
+            'error' => $error,
+        ]);
     }
 }
